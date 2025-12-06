@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "TDD Green Phase",
+  "description": "Triggers when user approves test suite to implement minimal passing code in src/ that makes all tests pass, then runs pytest to verify",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "TDD GREEN PHASE — MINIMAL PASSING CODE\n\nUser has approved the test suite.\nNow implement the smallest possible code in src/ that makes ALL tests pass.\n\nAfter generation:\n• Run `uv run pytest -q`\n• If any test fails → apologize and self-correct immediately\n• Show final passing test output"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "enabled": true,
+  "name": "Documentation Sync",
+  "description": "Listens to Python source files and project configuration files, then asks the agent to update documentation in README.md or docs/ folder when changes occur",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "*.py",
+      "pyproject.toml",
+      "kiro.yaml",
+      "specs/**/*.md"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Source files or specifications have been modified. Please review the changes and update the documentation accordingly. Update README.md for high-level changes or add/update files in the docs/ folder for detailed documentation. Ensure the documentation accurately reflects the current state of the codebase, including any new features, API changes, or architectural updates."
+  }
+}

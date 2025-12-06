@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Block Code Without Tests",
+  "description": "Warns and pauses when Python source files are created or modified without prior approved tests in the corresponding tests/ file",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "src/**/*.py"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "If this file was created/modified without prior approved tests in the corresponding tests/ file → warn and pause: \"Code without approved tests detected. This violates strict TDD. Ask to abort or add tests first.\""
+  }
+}

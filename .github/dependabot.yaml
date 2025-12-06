@@ -1,0 +1,15 @@
+# .github/dependabot.yml — 2025 elite standard (no ignore blocks)
+version: 2
+updates:
+  - package-ecosystem: "uv"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    reviewers: ["your-username"]
+    labels: ["dependencies", "auto"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"

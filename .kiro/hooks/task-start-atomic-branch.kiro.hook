@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Task Start → Auto-branch + Draft PR",
+  "description": "When a task file is created in specs/tasks/, automatically parse the task heading, create a Conventional Commit-compliant branch name, checkout the branch, push it upstream, and create a linked draft PR with GitHub issue",
+  "version": "1",
+  "when": {
+    "type": "fileCreated",
+    "patterns": [
+      "specs/tasks/**/*.md"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "ATOMIC BRANCH ENFORCEMENT\n\n1. Parse the current task heading from the newly created file → it must match Conventional Commit format\n2. Derive branch name following pattern: <type>/<kebab-case-description>\n   - Pattern: ^(feat|fix|refactor|test|chore|docs)/[a-z0-9-]+$\n   - Length: <50 chars\n   - No: uppercase, spaces, underscores, special chars, numbers at start\n   - Examples:\n     * feat(auth): add magic-link endpoint   → feat/auth-magic-link-endpoint\n     * test(user): validate email            → test/user-validate-email\n\n3. Execute the following git commands:\n   ```\n   git checkout -b <branch-name>\n   git push --set-upstream origin <branch-name>\n   ```\n\n4. Via GitHub MCP:\n   - Ensure a draft PR exists with title = task heading\n   - PR body should include the issue link\n   - Link the previously created GitHub issue\n\n5. Respond with:\n   \"Now on isolated branch `<branch-name>` ✓\n    GitHub Issue & Draft PR created and linked.\n    Starting strict TDD cycle (Red → Green → Refactor)…\""
+  }
+}

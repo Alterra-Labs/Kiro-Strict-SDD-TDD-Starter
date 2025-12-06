@@ -1,0 +1,88 @@
+{
+  // ==================================================================
+  // IMPORTANT: All Podman containers run rootless (default on macOS/Linux)
+  // No --user or --privileged flags → Podman runs as your user by default
+  // ==================================================================
+
+  "mcpServers": {
+    // 1. GitHub — essential for PRs/issues in SDD
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        // Secure — never commit the token
+        "GITHUB_TOKEN": "${command:security find-generic-password -s github_mcp_token -w}"
+      },
+      "disabled": false,
+
+      // Critical: auto-approve EVERY action needed for atomic flow
+      "autoApprove": [
+        "list-repos",
+        "list-issues",
+        "list-prs",
+        "create-issue",
+        "update-issue",           // for spec edits
+        "add-comment",
+        "create-pr",
+        "update-pr",
+        "link-issue-to-pr",       // explicit linking
+        "merge-pr",               // squash merge
+        "close-pr",
+        "close-issue",
+        "delete-branch",          // cleanup after merge
+        "add-labels",
+        "remove-labels"
+      ],
+
+      // Optional: fine-grained prompts the hooks will use
+      "prompts": {
+        "create-issue": "Create issue with title from task heading + body with spec link",
+        "link-issue-pr": "Add comment to issue with PR link and vice versa",
+        "merge-pr": "Squash-merge PR (commit message = task heading) and delete branch",
+        "close-issue-on-merge": "Close linked issue with comment 'Implemented in PR #X'"
+      }
+    },
+
+    // 2. AWS Knowledge — best-in-class AWS docs + recommendations
+    "aws-knowledge": {
+      "url": "https://knowledge-mcp.global.api.aws",
+      "type": "http",
+      "disabled": false,
+      "autoApprove": [
+        "search_documentation",
+        "read_documentation",
+        "get_recommendations",
+        "list_regions"
+      ]
+    },
+
+    // 3. Sequential Thinking — excellent reasoning chain (sandboxed)
+    "sequential-thinking": {
+      "command": "podman",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "--cap-drop=ALL",           // drop all Linux capabilities
+        "--network=none",           // no internet access
+        "docker.io/mcp/sequentialthinking:latest"
+      ],
+      "disabled": false,
+      "autoApprove": ["think_step_by_step"]
+    },
+
+    // 4. Memory Manager — persistent project memory (local, safe)
+    "memory-manager": {
+      "command": "uvx",
+      "args": ["kiro-mcp-memory"],
+      "env": {
+        "LOG_LEVEL": "WARN",
+        "MAX_MEMORY_ITEMS": "2000",
+        "ENABLE_AUTO_CLEANUP": "true",
+        "STORAGE_PATH": "./.kiro/memory"
+      },
+      "disabled": false,
+      "autoApprove": ["store", "search", "list"]
+    }
+  }
+}

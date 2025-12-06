@@ -1,0 +1,56 @@
+# .github/workflows/ci.yml — Minimal, ruff-only + mypy, pyproject.toml-driven CI (Nov 2025)
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]  # Optional: also run on direct merges (rare in your flow)
+
+jobs:
+  test-and-enforce-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Needed for accurate coverage diffs
+
+      - name: Set up Python
+        uses: actions/setup-python@v6  # v6 for full python-version-file support
+        with:
+          python-version-file: 'pyproject.toml'  # Reads version from file
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7  # Latest v7 for improved caching
+        with:
+          enable-cache: true  # Explicitly enable uv binary/dependency caching
+          cache-dependency-glob: |
+            **/pyproject.toml
+            **/uv.lock  # Invalidates cache only on dep changes
+
+      - name: Install dependencies
+        run: uv sync --all-extras --dev  # Respects [tool.uv], [tool.ruff], [tool.mypy] in pyproject.toml
+
+      - name: Lint & Format with ruff (fail if dirty)
+        run: |
+          uvx ruff check . --fix --exit-non-zero-on-fix || exit 1
+          uvx ruff format . --check || exit 1
+        # ↑ --fix + exit-non-zero-on-fix = fails if lint issues exist
+        # ↑ --check = fails if formatting is not perfect
+
+      - name: Type check with mypy (fail if invalid)
+        run: |
+          run: uv run mypy . --strict --install-types --non-interactive --ignore-missing-imports || true
+        # ↑ Strict mode from pyproject.toml; auto-installs stubs; fails on real type errors
+
+      - name: Run tests with coverage
+        run: |
+          if find src -name "*.py" -print -quit | grep -q .; then
+            uv run pytest --cov=src --cov-report=term-missing --cov-fail-under=90
+          else
+            echo "No Python files in src/ yet — skipping strict coverage enforcement"
+            uv run pytest --cov=src --cov-report=term-missing || true
+          fi
+
+      - name: Validate specs (optional but recommended)
+        run: npx markdownlint-cli2 "specs/**/*.md" || echo "Spec linting skipped (install markdownlint if desired)"

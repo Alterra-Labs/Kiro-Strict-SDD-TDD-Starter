@@ -1,0 +1,52 @@
+[project]
+name = "your-project-name"
+version = "0.1.0"
+description = "Your project description"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "mypy>=1.18.2",
+    "pre-commit>=4.5.0",
+    "pytest>=9.0.1",
+    "pytest-cov>=7.0.0",
+    "ruff>=0.14.5",
+]
+
+[tool.ruff]
+# Ruff now fully replaces black + isort + flake8 + more
+target-version = "py312"
+line-length = 88
+select = ["E", "F", "W", "I", "UP", "B", "C4", "PERF", "PYI"]
+ignore = []
+
+[tool.ruff.format]
+# Ruff's built-in formatter (black-compatible)
+preview = true
+quote-style = "double"
+indent-style = "space"
+
+[tool.pytest.ini_options]
+addopts = "--tb=short --strict-markers"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+
+
+[tool.mypy]
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+strict_equality = true
+# Ignore third-party stubs if needed: [[tool.mypy.overrides]] module = ["numpy.*"] ignore_missing_imports = true
+
+# Target files
+files = ["src/", "tests/"]
+
+# Per-module tweaks (add as needed)
+[[tool.mypy.overrides]]
+module = ["tests.*"]  # Looser for tests
+disallow_untyped_defs = false

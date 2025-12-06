@@ -1,0 +1,88 @@
+# kiro.yaml — Industry-Standard Strict SDD + TDD Enforcement (Nov 2025)
+specRoots: [specs/]
+taskRoot: specs/tasks/
+steeringRoots: [.kiro/steering/]
+defaultModel: claude-3-5-sonnet-20241022  # or opus for critical projects
+
+# GLOBAL ENFORCEMENT RULES — NO EXCEPTIONS
+hooks:
+  # 1. When any spec/tasks file is created or modified
+  onSpecCreate:
+    - prompt: |
+        YOU ARE IN STRICT INDUSTRY-STANDARD MODE. Follow these rules without exception:
+        • Every task in specs/tasks/*.md MUST be atomic (≤3 hours, one clear outcome).
+        • Every task heading MUST be a valid Conventional Commit:
+          Acceptable: ## feat(auth): add magic link endpoint
+                      ## test(auth): validate token expiry edge cases
+                      ## fix(login): prevent replay attacks
+                      ## refactor(user): extract profile service
+          Forbidden: vague titles, missing type/scope, natural language.
+        • For each task heading, immediately:
+          - Derive branch name: lowercase kebab-case of the heading (e.g., feat/auth-magic-link-endpoint)
+          - Create a GitHub issue titled exactly as the heading
+          - Add labels: `sdd-task`, `status:planned`
+          - Body: include full task description + link to parent spec
+        • Never allow multiple unrelated changes in one task/branch.
+
+  onSpecEdit:
+    - prompt: |
+        If any task heading changes, immediately:
+        • Update the linked GitHub issue title
+        • Post a comment on the issue: "Task scope updated — see new spec"
+
+  # 2. When user starts a task → force branch + issue linkage
+  onTaskStart:
+    - prompt: |
+        STRICT TDD + ATOMIC BRANCH MODE ACTIVATED
+        1. Parse the task heading to extract Conventional Commit type and scope
+        2. Generate branch name: <type>/<kebab-case-description>
+           Pattern: ^(feat|fix|refactor|test|chore|docs)/[a-z0-9-]+$
+           Length: <50 chars
+           No: uppercase, spaces, underscores, special chars, numbers at start
+           Examples:
+             feat(auth): add magic link endpoint   → feat/auth-magic-link-endpoint
+             test(user): validate email format      → test/user-validate-email-format
+        3. Execute:
+           git checkout -b <branch-name>
+           git push --set-upstream origin <branch-name>
+        4. Via GitHub MCP: ensure draft PR exists (title = task heading) and is linked to the issue
+        5. Respond: "Now on branch `<branch-name>`. GitHub issue & draft PR created. Starting TDD cycle..."
+
+  # 3. TDD RED PHASE — failing tests FIRST (mandatory)
+  onTaskImplement:
+    - prompt: |
+        TDD RED PHASE — NO CODE UNTIL TESTS ARE APPROVED
+        1. Generate comprehensive failing unit tests in tests/ that fully describe the desired behavior
+        2. Include edge cases, error conditions, and happy path
+        3. Use pytest + proper assertions
+        4. Show test output proving they currently fail
+        5. PAUSE and ask:
+           "Here are the proposed tests. Do you approve them? [Y/N/Edit]"
+        → Only proceed to code generation if user replies Y
+
+  # 4. TDD GREEN PHASE — only after test approval
+  onTaskApprove:  # Triggered manually or after "Y" above
+    - prompt: |
+        TDD GREEN PHASE
+        User has approved the tests. Now implement the minimal code in src/ to make ALL tests pass.
+        Run `uv run pytest -q` after generation and show results.
+        If any test fails, automatically 1. apologize, 2. fix immediately.
+
+  # 5. TDD REFACTOR PHASE + final approval
+  onTaskComplete:
+    - prompt: |
+        TDD REFACTOR + FINAL GATE
+        1. Confirm 100% test coverage for new/changed lines (aim ≥90%)
+        2. Run ruff + mypy
+        3. Generate clean git diff
+        4. Suggest Conventional Commit message matching the task heading
+        5. Ask:
+           "All tests pass. Final approval to commit, squash-merge this branch, and close the PR/issue? [Y/N]"
+        → Only if Y: commit, push, squash-merge via GitHub MCP, close issue/PR, delete branch, return to main
+
+  # 6. Pre-commit safety net (never bypassed)
+  preCommit:
+    - prompt: |
+        Enforce Conventional Commits on ALL commits.
+        If message doesn't match pattern → reject and suggest correct one.
+        Never allow commit without prior test approval and passing CI.

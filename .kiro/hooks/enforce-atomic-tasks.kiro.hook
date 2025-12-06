@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Enforce Atomic Tasks & Issue Creation",
+  "description": "Monitors spec files for task headings, validates they follow Conventional Commit format, and automatically creates or updates GitHub issues for each task with proper labels and links back to the spec file.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "specs/**/*.md"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "STRICT ATOMIC SDD MODE — NO EXCEPTIONS\n\nYou must enforce atomic task structure and GitHub issue creation:\n\n1. **Scan for Task Headings**: Parse all level-2 headings (## ...) in the modified spec file\n2. **Validate Format**: Each task heading MUST follow Conventional Commit format: `## type(scope): description`\n   - Valid types: feat, fix, docs, style, refactor, test, chore, perf, ci, build\n   - Example: `## feat(auth): add magic-link endpoint`\n3. **For Each Valid Task**:\n   - Extract type, scope, and description\n   - Use GitHub MCP to create or update an issue:\n     * title: exact task heading text\n     * labels: [\"sdd-task\", \"status:planned\"]\n     * body: Include full task description from spec + link to spec file\n   - Report back the issue number created/updated\n4. **For Invalid Headings**:\n   - REJECT the heading\n   - Provide specific correction guidance\n   - Do NOT proceed until fixed\n\nOutput format:\n- List all validated tasks with their issue numbers\n- List any invalid headings that need correction\n- Provide clear next steps"
+  }
+}

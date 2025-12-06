@@ -1,0 +1,22 @@
+# .github/workflows/auto-approve.yml
+name: Auto-Approve for Solo Developer
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  approve:
+    if: >-
+      github.event.comment.body == '-APPROVED-' &&
+      github.actor == github.repository_owner
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - name: Auto-approve PR
+        uses: hmarr/auto-approve-action@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          review-message: "Solo-dev auto-approved via -APPROVED- comment"

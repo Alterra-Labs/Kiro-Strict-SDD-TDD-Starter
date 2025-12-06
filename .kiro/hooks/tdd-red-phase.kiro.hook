@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "TDD Red Phase",
+  "description": "Enforces TDD red phase by requiring comprehensive failing tests to be written and explicitly approved before any production code can be generated",
+  "version": "1",
+  "when": {
+    "type": "userTriggered"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "TDD RED PHASE — CODE GENERATION BLOCKED\n\nYou are NOT allowed to write production code yet.\n\n1. Generate comprehensive failing pytest unit tests in tests/\n2. Cover: happy path, edge cases, error conditions, security\n3. Show proof they currently fail\n4. PAUSE and ask:\n   \"These are the proposed tests. Do you approve them exactly as written?\n    Reply Y to proceed to code generation\n    Reply N or Edit to modify\"\n\n→ ONLY proceed if user explicitly replies Y"
+  }
+}

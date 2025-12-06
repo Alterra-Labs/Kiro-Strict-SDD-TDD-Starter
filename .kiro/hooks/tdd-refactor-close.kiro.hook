@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "TDD Refactor and Close",
+  "description": "Runs full lint, type check, coverage verification, generates git diff, suggests Conventional Commit message, and prompts for final approval to auto-merge and close the task",
+  "version": "1",
+  "when": {
+    "type": "userPrompt"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "TDD REFACTOR + FINAL HUMAN GATE (with MyPy)\n\n1. Run full lint + type check (ruff, mypy --strict)\n2. Confirm test coverage ≥90% on new lines\n3. Generate clean git diff\n4. Suggest exact Conventional Commit message matching the task heading\n5. Final gate — ask:\n   \"All tests pass. Coverage ≥90%. Ruff & MyPy clean.\n     Final approval to:\n     • commit with Conventional Commit\n     • squash-merge this branch to main\n     • close the PR and GitHub issue\n     • delete branch locally and remotely\n     [Y/N]\"\n→ Only if Y: execute full auto-merge sequence via GitHub MCP"
+  }
+}

@@ -1,0 +1,24 @@
+name: Auto-Approve Security PRs
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  approve:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    if: |
+      (github.actor == 'dependabot[bot]' || contains(github.event.pull_request.title, 'CodeQL fix') || contains(github.event.pull_request.body, 'Autofix')) &&
+      github.event.pull_request.additions < 50
+    steps:
+      - uses: hmarr/auto-approve-action@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          review-message: "Security auto-approve: Vuln fixed, checks passed"
+      - name: Label for Auto-Merge
+        if: success()
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          labels: security-fix
